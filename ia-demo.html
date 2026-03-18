@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MORE BI - IA Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/ia-demo.css">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="scan-line"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <img src="./img/logo-morebi.png" alt="MORE BI" class="logo-img">
+            <span class="logo-text">MORE BI AI</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Sistema Online</span>
+            </div>
+            <button class="close-btn" onclick="window.close()" title="Cerrar">×</button>
+        </div>
+    </header>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Pantalla de bienvenida -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <div class="ai-avatar-large">🤖</div>
+            <h1 class="welcome-title">MORE BI Assistant</h1>
+            <p class="welcome-subtitle">
+                Tu asistente de inteligencia analítica. Hazme preguntas sobre datos, 
+                análisis predictivo o automatización robótica.
+            </p>
+        </div>
+
+        <!-- Área de mensajes -->
+        <div class="messages-area" id="messagesArea">
+            <!-- Los mensajes se agregan aquí dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Sugerencias rápidas -->
+    <div class="quick-suggestions" id="suggestions">
+        <div class="suggestion-chip" onclick="sendSuggestion('Analiza mis ventas del último trimestre')">
+            📊 Analizar ventas Q4
+        </div>
+        <div class="suggestion-chip" onclick="sendSuggestion('Predice tendencias para el próximo año')">
+            🔮 Predicciones 2026
+        </div>
+        <div class="suggestion-chip" onclick="sendSuggestion('Optimiza mi proceso de manufactura')">
+            ⚙️ Optimizar proceso
+        </div>
+        <div class="suggestion-chip" onclick="sendSuggestion('Genera un reporte de ROI')">
+            📈 Reporte ROI
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+        <div class="input-wrapper">
+            <input 
+                type="text" 
+                class="input-field" 
+                id="messageInput" 
+                placeholder="Escribe tu consulta analítica..."
+                autocomplete="off"
+            >
+            <button class="send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const messageInput = document.getElementById('messageInput');
+        const messagesArea = document.getElementById('messagesArea');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const suggestions = document.getElementById('suggestions');
+
+        let conversationStarted = false;
+
+        // Respuestas predefinidas de la IA
+        const aiResponses = {
+            'hola': '¡Saludos! Soy MORE BI Assistant, tu especialista en analítica de datos y automatización. ¿En qué puedo ayudarte hoy?',
+            'ventas': 'Analizando tus datos de ventas... 📊\n\nBasado en tu historial, detecto un patrón de crecimiento del 23% en el último trimestre. Te recomiendo enfocarte en los productos de la categoría A que muestran mayor margen de beneficio.',
+            'prediccion': 'Procesando modelos predictivos... 🔮\n\nCon un 94% de confianza, proyectamos:\n• Aumento del 15% en demanda Q1 2026\n• Estacionalidad alta en marzo-abril\n• Oportunidad de expansión en mercado B2B',
+            'robot': 'Sistemas robóticos activos... 🤖\n\nTu flota actual:\n• 12 unidades operando al 98% eficiencia\n• 3 en mantenimiento preventivo\n• ROI acumulado: 340% desde implementación',
+            'optimiza': 'Analizando procesos... ⚙️\n\nOportunidades identificadas:\n1. Reducir tiempo de ciclo en estación 3 (ahorro potencial: 12%)\n2. Implementar visión por computadora en QC\n3. Automatizar reporte de inventario',
+            'reporte': 'Generando informe ejecutivo... 📈\n\n**Métricas Clave (Último mes):**\n• Precisión predictiva: 98.2%\n• Tiempo de respuesta: <2ms\n• Costos operativos: -18% vs mes anterior\n• Satisfacción del cliente: 94/100',
+            'default': 'Entiendo tu consulta. Permíteme procesarla con nuestros algoritmos de análisis avanzado... \n\nBasado en tus datos históricos y patrones de mercado, te sugiero revisar el dashboard de "Performance Analytics" donde encontrarás insights detallados. ¿Te gustaría que profundice en algún aspecto específico?'
+        };
+
+        // Función para enviar mensaje
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            // Ocultar pantalla de bienvenida
+            if (!conversationStarted) {
+                welcomeScreen.classList.add('hidden');
+                conversationStarted = true;
+            }
+
+            // Agregar mensaje del usuario
+            addMessage(text, 'user');
+            messageInput.value = '';
+
+            // Mostrar indicador de escritura
+            showTypingIndicator();
+
+            // Simular respuesta de IA
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = generateResponse(text);
+                addMessage(response, 'ai');
+            }, 1500 + Math.random() * 1000);
+        }
+
+        // Función para enviar sugerencia
+        function sendSuggestion(text) {
+            messageInput.value = text;
+            sendMessage();
+        }
+
+        // Generar respuesta basada en palabras clave
+        function generateResponse(text) {
+            const lowerText = text.toLowerCase();
+            
+            for (const [keyword, response] of Object.entries(aiResponses)) {
+                if (lowerText.includes(keyword)) {
+                    return response;
+                }
+            }
+            
+            return aiResponses['default'];
+        }
+
+        // Agregar mensaje al chat
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = sender === 'user' ? '👤' : '🤖';
+            const time = new Date().toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            messageDiv.innerHTML = `
+                <div class="avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-text">${formatText(text)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Formatear texto (convertir \n en <br> y ** en bold)
+        function formatText(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // Mostrar indicador de escritura
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai typing';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="avatar">🤖</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            messagesArea.appendChild(typingDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Remover indicador de escritura
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        // Event listeners
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Enfocar input al cargar
+        messageInput.focus();
+
+        // Mensaje de bienvenida automático después de 2 segundos
+        setTimeout(() => {
+            if (!conversationStarted) {
+                addMessage('¡Hola! Soy tu asistente de MORE BI. Estoy listo para ayudarte con análisis de datos, predicciones y optimización de procesos. ¿Qué te gustaría explorar hoy?', 'ai');
+                welcomeScreen.classList.add('hidden');
+                conversationStarted = true;
+            }
+        }, 2000);
+
+        console.log('%c🤖 MORE BI AI', 'color: #00d4ff; font-size: 20px; font-weight: bold;');
+        console.log('%cSistema de inteligencia analítica activado', 'color: #67e8f9;');
+    </script>
+</body>
+</html>
