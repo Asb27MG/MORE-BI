@@ -3,7 +3,8 @@
         const messageInput = document.getElementById('messageInput');
         const messagesArea = document.getElementById('messagesArea');
         const welcomeScreen = document.getElementById('welcomeScreen');
-        const suggestions = document.getElementById('suggestions');
+        const suggestionsContainer = document.getElementById('suggestionsContainer');
+        const sendBtn = document.getElementById('sendBtn');
 
         let conversationStarted = false;
 
@@ -23,7 +24,7 @@
             const text = messageInput.value.trim();
             if (!text) return;
 
-            // Ocultar pantalla de bienvenida
+            // Ocultar pantalla de bienvenida y sugerencias
             if (!conversationStarted) {
                 welcomeScreen.classList.add('hidden');
                 conversationStarted = true;
@@ -32,6 +33,10 @@
             // Agregar mensaje del usuario
             addMessage(text, 'user');
             messageInput.value = '';
+            messageInput.focus(); // Mantener foco
+
+            // Scroll al final
+            scrollToBottom();
 
             // Mostrar indicador de escritura
             showTypingIndicator();
@@ -41,6 +46,7 @@
                 removeTypingIndicator();
                 const response = generateResponse(text);
                 addMessage(response, 'ai');
+                scrollToBottom();
             }, 1500 + Math.random() * 1000);
         }
 
@@ -48,6 +54,13 @@
         function sendSuggestion(text) {
             messageInput.value = text;
             sendMessage();
+        }
+
+        // Scroll suave al final
+        function scrollToBottom() {
+            setTimeout(() => {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }, 100);
         }
 
         // Generar respuesta basada en palabras clave
@@ -83,13 +96,12 @@
             `;
 
             messagesArea.appendChild(messageDiv);
-            messagesArea.scrollTop = messagesArea.scrollHeight;
         }
 
-        // Formatear texto (convertir \n en <br> y ** en bold)
+        // Formatear texto
         function formatText(text) {
             return text
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #00d4ff;">$1</strong>')
                 .replace(/\n/g, '<br>');
         }
 
@@ -109,7 +121,7 @@
                 </div>
             `;
             messagesArea.appendChild(typingDiv);
-            messagesArea.scrollTop = messagesArea.scrollHeight;
+            scrollToBottom();
         }
 
         // Remover indicador de escritura
@@ -120,21 +132,50 @@
 
         // Event listeners
         messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
         });
 
-        // Enfocar input al cargar
-        messageInput.focus();
+        // Prevenir que el input pierda foco al hacer scroll
+        messageInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (document.activeElement !== messageInput) {
+                    // Solo reenfocar si no se hizo clic en otro elemento interactivo
+                }
+            }, 100);
+        });
 
-        // Mensaje de bienvenida automático después de 2 segundos
+        // Ajustar altura al aparecer/desaparecer teclado en móvil
+        const setVH = () => {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+
+        setVH();
+        window.addEventListener('resize', setVH);
+
+        // Detectar cambio de orientación
+        window.addEventListener('orientationchange', () => {
+            setTimeout(setVH, 100);
+        });
+
+        // Enfocar input al cargar (con delay para evitar conflictos)
+        setTimeout(() => {
+            messageInput.focus();
+        }, 500);
+
+        // Mensaje de bienvenida automático
         setTimeout(() => {
             if (!conversationStarted) {
                 addMessage('¡Hola! Soy tu asistente de MORE BI. Estoy listo para ayudarte con análisis de datos, predicciones y optimización de procesos. ¿Qué te gustaría explorar hoy?', 'ai');
                 welcomeScreen.classList.add('hidden');
                 conversationStarted = true;
+                scrollToBottom();
             }
-        }, 2000);
+        }, 2500);
 
         console.log('%c🤖 MORE BI AI', 'color: #00d4ff; font-size: 20px; font-weight: bold;');
         console.log('%cSistema de inteligencia analítica activado', 'color: #67e8f9;');
-    
+ 
