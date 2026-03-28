@@ -8,8 +8,9 @@ const startServer = async (): Promise<void> => {
     await testDbConnection();
     console.log("MySQL conectado correctamente");
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown database error";
-    console.error(`No se pudo conectar a MySQL: ${message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    const detail = message && message.trim().length > 0 ? message : JSON.stringify(error);
+    console.error(`No se pudo conectar a MySQL: ${detail}`);
   }
 
   app.listen(PORT, () => {

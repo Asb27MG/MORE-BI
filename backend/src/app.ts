@@ -27,6 +27,15 @@ app.use(
 );
 app.use(express.json());
 
+app.get("/", (_req, res) => {
+  res.status(200).json({
+    service: "more-bi-backend",
+    status: "ok",
+    health: "/health",
+    api: "/api",
+  });
+});
+
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
