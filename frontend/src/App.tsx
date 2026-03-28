@@ -1,8 +1,27 @@
 import { useEffect } from 'react'
 import './App.css'
 
-const API_BASE_URL =
-  (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://127.0.0.1:4000'
+const resolveApiBaseUrl = (): string => {
+  const envBaseUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim()
+  if (envBaseUrl) {
+    return envBaseUrl.replace(/\/$/, '')
+  }
+
+  const { protocol, hostname, origin } = window.location
+
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return `${protocol}//${hostname}:4000`
+  }
+
+  if (hostname.endsWith('.onrender.com') && hostname.includes('-frontend')) {
+    const backendHost = hostname.replace('-frontend', '-backend')
+    return `${protocol}//${backendHost}`
+  }
+
+  return origin
+}
+
+const API_BASE_URL = resolveApiBaseUrl()
 
 function App() {
   useEffect(() => {
