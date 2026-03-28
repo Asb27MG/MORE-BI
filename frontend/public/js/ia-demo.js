@@ -29,6 +29,11 @@
                 return `${protocol}//${hostname}:4000/api/chat`;
             }
 
+            // En dominio custom de produccion, usar subdominio API dedicado.
+            if (hostname === 'morebi.ai' || hostname === 'www.morebi.ai') {
+                return `${protocol}//api.morebi.ai/api/chat`;
+            }
+
             // Si el frontend esta en Render con nombre "*-frontend", intenta "*-backend".
             if (hostname.endsWith('.onrender.com') && hostname.includes('-frontend')) {
                 const backendHost = hostname.replace('-frontend', '-backend');
